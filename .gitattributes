@@ -1,0 +1,4 @@
+# Windows 批处理必须保持 CRLF。-text 表示原样存取，不让 Git 按 core.autocrlf 转换，
+# 这样 git clone 和 GitHub 网页上的 Download ZIP 拿到的都是 CRLF。
+*.bat -text
+*.cmd -text

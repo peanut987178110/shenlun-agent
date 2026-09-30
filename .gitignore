@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# 数据与密钥：数据库、上传的答卷原图、令牌密钥、模型密钥都不进仓库
+backend/data/
+backend/.env
+
+# 前端
+node_modules/
+frontend/dist/
+
+*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+# Backend dependencies (pinned).
+# Install:  .venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+# China mirror:  add  -i https://pypi.tuna.tsinghua.edu.cn/simple
+#
+# Keep this file ASCII-only: pip reads it with the system default encoding,
+# which on Chinese Windows is GBK, and non-ASCII comments break the install.
+
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+httpx==0.28.1
+
+pydantic==2.13.5
+pydantic-settings==2.15.0
+
+sqlalchemy[asyncio]==2.1.1
+aiosqlite==0.22.1
+greenlet==3.5.6
+
+langchain-core==1.6.5
+langchain-openai==1.6.6
+langgraph==1.2.12
+
+pypdf==6.19.0
+pillow==12.1.0
+numpy==2.5.3
+
+# tests
+pytest==8.4.2
+pytest-asyncio==1.2.0
