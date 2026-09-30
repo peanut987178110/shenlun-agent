@@ -28,6 +28,21 @@ def start(submission_id: int, version_id: int) -> None:
     task.add_done_callback(_running.discard)
 
 
+def fit_dimensions(dims: list[dict], full_score: float) -> list[dict]:
+    """只有等级型维度的题（大作文）：把各维度满分按比例放大到题目满分。
+
+    默认维度按 40 分设计，浙江大作文是 50 分；不缩放的话最高只能拿 40。
+    有要点型维度的题不用动：要点满分 = 题目满分 − 等级型满分之和，自然补齐。
+    """
+    if any(d["mode"] == "points" for d in dims):
+        return dims
+    total = sum(d.get("max", 0) for d in dims)
+    if not total or abs(total - full_score) < 0.01:
+        return dims
+    k = full_score / total
+    return [{**d, "max": round(d["max"] * k, 1)} for d in dims]
+
+
 async def build_context(db, sub: Submission, version: AnswerVersion) -> GradingContext:
     q = await db.get(Question, sub.question_id) if sub.question_id else None
     ocr_factor = ocr.ocr_quality_factor(sub.ocr_source, sub.ocr_lines or [])
@@ -35,7 +50,8 @@ async def build_context(db, sub: Submission, version: AnswerVersion) -> GradingC
         qtype = sub.custom_qtype or "summary"
         return GradingContext(
             qtype=qtype, stem=sub.custom_stem, full_score=sub.custom_full_score or 20,
-            word_min=0, word_max=0, dimensions=DIMENSIONS[qtype], points=[],
+            word_min=0, word_max=0,
+            dimensions=fit_dimensions(DIMENSIONS[qtype], sub.custom_full_score or 20), points=[],
             word_rule=DEFAULT_WORD_RULE, materials=[], answer=version.text,
             match_level="generic", ocr_factor=ocr_factor)
 
@@ -51,12 +67,15 @@ async def build_context(db, sub: Submission, version: AnswerVersion) -> GradingC
                    "score": p.score}
                   for p in (await db.execute(select(ScoringPoint).where(
                       ScoringPoint.rubric_id == rubric.id).order_by(ScoringPoint.id))).scalars()]
-    mats = (await db.execute(select(Material).where(
-        Material.paper_id == q.paper_id, Material.no.in_(q.material_refs or []))
-        .order_by(Material.no, Material.paragraph))).scalars().all()
+    # material_refs 为空表示「结合给定资料」，即全部资料（真题大作文多是这样）
+    stmt = select(Material).where(Material.paper_id == q.paper_id)
+    if q.material_refs:
+        stmt = stmt.where(Material.no.in_(q.material_refs))
+    mats = (await db.execute(stmt.order_by(Material.no, Material.paragraph))).scalars().all()
     return GradingContext(
         qtype=q.qtype, stem=q.stem, full_score=q.full_score, word_min=q.word_min,
-        word_max=q.word_max, dimensions=(rubric.dimensions if rubric else DIMENSIONS[q.qtype]),
+        word_max=q.word_max,
+        dimensions=fit_dimensions(rubric.dimensions if rubric else DIMENSIONS[q.qtype], q.full_score),
         points=points, word_rule=(rubric.word_rule if rubric else DEFAULT_WORD_RULE),
         materials=[{"no": m.no, "paragraph": m.paragraph, "text": m.text} for m in mats],
         answer=version.text, match_level=sub.match_level or "exact", ocr_factor=ocr_factor,

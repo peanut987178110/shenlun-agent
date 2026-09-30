@@ -135,6 +135,13 @@ async def test_graph_rule_path_end_to_end():
     assert r["score_low"] <= r["score"] <= r["score_high"]
 
 
+def test_essay_dimensions_scaled_to_full_score():
+    from app.services.grading_service import fit_dimensions
+    dims = fit_dimensions(DIMENSIONS["essay"], 50)
+    assert sum(d["max"] for d in dims) == pytest.approx(50)
+    assert fit_dimensions(DIMENSIONS["summary"], 20) is DIMENSIONS["summary"]  # 有要点维度的不动
+
+
 @pytest.mark.asyncio
 async def test_graph_rule_essay_confidence_capped():
     r = await graph.run_grading(make_ctx(qidx=4, answer="数字治理要以人为本。\n" * 30))
