@@ -92,6 +92,8 @@ async function render(file) {
 }
 
 // 1) 流程图 SVG：从 流程图.md 里按「## 图 N 标题」切出每张图
+// 注意：Mermaid 布局带随机种子，同一份源码两次导出的路径坐标会略有不同（图形一样）。
+// 所以不必每次重建都提交 SVG，改动流程图本身时再重新生成即可。
 mkdirSync(DIAGRAMS, { recursive: true })
 {
   const { p } = await render('流程图.md')
@@ -111,9 +113,13 @@ mkdirSync(DIAGRAMS, { recursive: true })
   svgs.forEach(({ title, svg }, i) => {
     const m = title.match(/^图\s*(\d+)\s*(.+)$/)
     const name = m ? `${m[1].padStart(2, '0')}-${m[2].replace(/[（）()\s]/g, '')}` : `diagram-${i + 1}`
+    // Mermaid 每次渲染给的元素 id 是随机的（mermaid-1699...）。换成稳定 id，
+    // 否则每次重新生成，SVG 整行都变，提交里全是噪音。
+    const randomId = svg.match(/id="(mermaid-[\w-]+)"/)?.[1]
+    const stable = svg.split(randomId).join(`mermaid-${name}`)
     // 独立打开 SVG 时要白底，否则深色模式下看不清
     writeFileSync(join(DIAGRAMS, `${name}.svg`),
-      svg.replace(/<svg([^>]*)>/, '<svg$1><rect width="100%" height="100%" fill="#ffffff"/>'))
+      stable.replace(/<svg([^>]*)>/, '<svg$1><rect width="100%" height="100%" fill="#ffffff"/>'))
     console.log('svg ', `diagrams/${name}.svg`)
   })
   await p.close()
