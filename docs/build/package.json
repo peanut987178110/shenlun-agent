@@ -1,0 +1,14 @@
+{
+  "name": "shenlun-docs-build",
+  "private": true,
+  "description": "把 docs/*.md 连同其中的 Mermaid 流程图导出为 PDF 和 SVG。用本机已装的 Chrome 渲染，不下载浏览器。",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "marked": "18.0.14",
+    "mermaid": "12.0.0",
+    "playwright-core": "1.63.0"
+  }
+}

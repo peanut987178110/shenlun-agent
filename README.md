@@ -82,13 +82,21 @@ backend/
   app/services/    也包含 generator.py（AI 出题）、rubric.py（按材料生成评分点）、sheet.py（答卷分题、匹配试卷）
   tests/
 frontend/src/      Vue 3 界面
-docs/              需求文档（转写版）与需求修订说明
+docs/              PRD、需求分析、流程图（Markdown + PDF + SVG）与需求修订说明
+  build/           把文档导出为 PDF 和 SVG 的脚本
 scripts/           启动脚本；make_bat.py 生成 .bat（CRLF + 纯 ASCII 引导头）
 ```
 
-## 需求文档
+## 文档
 
-`docs/PRD.md` 与 `docs/需求分析.md` 是原始需求的转写版。修订了 15 处问题（阶段范围矛盾、「官方评分细则」的误导表述、试卷类别与浙江实际不符、逐题上传的流程不可行、图片外发的隐私缺口、置信度未定义等），修订内容与 MVP 范围见 [docs/需求修订说明.md](docs/需求修订说明.md)。
+| 文档 | 内容 |
+|---|---|
+| [PRD.md](docs/PRD.md) · [PDF](docs/PRD.pdf) | 产品需求：定位、浙江试卷结构、各模块功能与验收标准、分数与置信度公式、架构、非功能需求 |
+| [需求分析.md](docs/需求分析.md) · [PDF](docs/需求分析.pdf) | 背景、问题定义、用户分析、需求清单、设计取舍、约束与缺口 |
+| [流程图.md](docs/流程图.md) · [PDF](docs/流程图.pdf) · [SVG](docs/diagrams/) | 9 张流程图：业务总流程、答卷流程、批改智能体、AI 出题、申论助手、申诉复核、导入真题、系统架构、数据模型 |
+| [需求修订说明.md](docs/需求修订说明.md) | 相对原始需求（V1.0）的 15 处修订及原因 |
+
+`docs/build` 负责把 Markdown 连同其中的 Mermaid 图导出为 PDF 和 SVG：`cd docs/build && npm install && npm run build`（用本机已装的 Chrome 渲染，不下载浏览器）。
 
 ## 安全与隐私
 
